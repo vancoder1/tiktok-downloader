@@ -3,7 +3,7 @@ import os
 import threading
 from pathlib import Path
 from loguru import logger
-from utils.constants import CONFIG_FILE_PATH
+from config import CONFIG_FILE_PATH
 
 class JsonHandler:
     _instance = None

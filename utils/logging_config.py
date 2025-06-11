@@ -1,7 +1,7 @@
 from loguru import logger
 import sys
 import os
-from utils import constants
+from config import DEBUG_MODE
 
 def setup_logging():
     logger.remove() # Remove any default handlers
@@ -10,7 +10,7 @@ def setup_logging():
     os.makedirs(log_dir, exist_ok=True) # Ensure log directory exists
 
     # Determine effective log level from your constants file
-    effective_log_level = "DEBUG" if constants.DEBUG_MODE else "INFO"
+    effective_log_level = "DEBUG" if DEBUG_MODE else "INFO"
 
     # Max file size and backup count from your original config
     max_file_size_bytes = 5 * 1024 * 1024 # 5MB
@@ -36,7 +36,7 @@ def setup_logging():
 
     # Initial configuration message
     init_log_message = f"Loguru logger configured. Level: {effective_log_level}."
-    if constants.DEBUG_MODE:
+    if DEBUG_MODE:
         init_log_message += " (DEBUG_MODE is ON)"
     else:
         init_log_message += " (DEBUG_MODE is OFF)"

@@ -1,6 +1,6 @@
 import os
 import subprocess
-from utils.constants import PROXY_LIST_FILE
+from config import PROXY_LIST_FILE
 import json
 
 def retrieve_proxy_list(output_dir="data/", output_filename=PROXY_LIST_FILE):

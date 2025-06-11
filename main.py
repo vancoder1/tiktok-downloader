@@ -2,7 +2,7 @@ from TikTokApi import TikTokApi
 from yt_dlp import YoutubeDL
 import asyncio
 import os
-from utils.constants import TEMP_DIR, OUTPUTS_DIR
+from config import TEMP_DIR, OUTPUTS_DIR
 from utils import proxy_retriever
 
 ms_token = os.environ.get("ms_token", None)
