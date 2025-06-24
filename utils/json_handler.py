@@ -49,6 +49,32 @@ class JsonHandler:
             logger.error(f"Failed to save configuration to {self.config_path}: {e}", exc_info=True)
             raise
 
+    @staticmethod
+    def load_json_file(file_path: str):
+        """
+        Loads JSON data from a specified file path.
+
+        Args:
+            file_path (str): The path to the JSON file.
+
+        Returns:
+            dict or list: The loaded JSON data, or None if an error occurs.
+        """
+        path = Path(file_path)
+        if not path.exists():
+            logger.error(f"File not found at {path}.")
+            return None
+        try:
+            with path.open('r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON from {path}: {e}.", exc_info=True)
+            return None
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while loading JSON from {path}: {e}", exc_info=True)
+            return None
+
     def get_setting(self, key_path: str, default=None):
         keys = key_path.split('.')
         current_level = self.config_data

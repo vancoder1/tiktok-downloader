@@ -1,7 +1,7 @@
 import os
 import subprocess
 from config import PROXY_LIST_FILE
-import json
+from utils.json_handler import JsonHandler
 
 def retrieve_proxy_list(output_dir="data/", output_filename=PROXY_LIST_FILE):
     """
@@ -55,23 +55,19 @@ def get_proxy_urls_from_file(json_file_path = "data/" + PROXY_LIST_FILE):
               or the file is not found.
     """
     proxy_urls = []
-    try:
-        with open(json_file_path, 'r') as f:
-            # The provided JSON structure seems to be a list of objects directly
-            data = json.load(f)
-            if isinstance(data, list): # Check if the loaded data is a list
-                for proxy_info in data:
-                    if isinstance(proxy_info, dict) and "proxy" in proxy_info:
-                        proxy_urls.append(proxy_info["proxy"])
-                    else:
-                        print(f"Warning: Skipping item due to missing 'proxy' key or incorrect format: {proxy_info}")
+    data = JsonHandler.load_json_file(json_file_path)
+
+    if data is None:
+        return []
+
+    if isinstance(data, list):
+        for proxy_info in data:
+            if isinstance(proxy_info, dict) and "proxy" in proxy_info:
+                proxy_urls.append(proxy_info["proxy"])
             else:
-                print(f"Error: JSON file at '{json_file_path}' does not contain a list of proxies at the root level.")
-                return [] # Return empty list if the top level isn't a list
-    except FileNotFoundError:
-        print(f"Error: JSON file not found at '{json_file_path}'")
-    except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from file '{json_file_path}'")
-    except Exception as e:
-        print(f"An unexpected error occurred while reading or parsing the JSON file: {e}")
+                print(f"Warning: Skipping item due to missing 'proxy' key or incorrect format: {proxy_info}")
+    else:
+        print(f"Error: JSON file at '{json_file_path}' does not contain a list of proxies at the root level.")
+        return []
+
     return proxy_urls

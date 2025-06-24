@@ -33,11 +33,3 @@ def setup_logging():
         colorize=True,
         level=effective_log_level,
     )
-
-    # Initial configuration message
-    init_log_message = f"Loguru logger configured. Level: {effective_log_level}."
-    if DEBUG_MODE:
-        init_log_message += " (DEBUG_MODE is ON)"
-    else:
-        init_log_message += " (DEBUG_MODE is OFF)"
-    logger.info(init_log_message)
