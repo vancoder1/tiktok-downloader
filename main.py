@@ -21,44 +21,18 @@ from config import OUTPUTS_DIR, TEMP_DIR # PROXY_LIST_FILE, DEBUG_MODE not used 
 # --- Common Click options ---
 output_dir_option = click.option(
     '--output-dir', 'output_directory',
-    default=OUTPUTS_DIR,
+    default=TEMP_DIR, # Changed default to TEMP_DIR
     type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
     show_default=True,
-    help='Directory where downloaded videos will be saved.'
-)
-temp_dir_option = click.option(
-    '--temp-dir', 'temporary_directory',
-    default=TEMP_DIR,
-    type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
-    show_default=True,
-    help='Directory used for temporary storage during the download process.'
+    help='Output directory for videos. Defaults to temporary directory.'
 )
 count_option = click.option(
     '--count', type=int, default=10, show_default=True,
-    help='Maximum number of videos to download (for hashtag, user, trending feeds).'
+    help='Max videos to download (for hashtag, user, trending).'
 )
 
 
 @click.group()
-@click.pass_context
-def cli(ctx):
-    """
-    \b
-    yt-shorts-tiktok-generator
-    ---------------------------
-
-    A command-line tool designed to download TikTok videos for various
-    purposes, including content creation for platforms like YouTube Shorts.
-
-    Use one of the available commands below to get started.
-    For command-specific help, type: COMMAND --help
-    e.g., tiktok by-hashtag --help
-    """
-    ctx.ensure_object(dict)
-    setup_logging()
-
-# --- TikTok Command Group ---
-@cli.group("tiktok")
 @click.option(
     '--headless/--no-headless',
     default=False,
@@ -73,14 +47,25 @@ def cli(ctx):
     help="Specify the browser engine (e.g., chromium, firefox) for TikTok interactions."
 )
 @click.pass_context
-def tiktok_group(ctx, headless: bool, browser: str):
-    """Download TikTok videos using different methods like hashtag, user, URL, or trending feeds."""
+def cli(ctx, headless: bool, browser: str):
+    """
+    \b
+    TikTok Video Downloader
+
+    Download TikTok videos by hashtag, user, URL, or trending feeds.
+
+    Usage: COMMAND [OPTIONS]
+    Example: by-hashtag --help
+    """
+    ctx.ensure_object(dict)
+    setup_logging()
     _ms_token = os.environ.get("ms_token", None)
 
     ctx.obj['ms_token'] = _ms_token
     ctx.obj['tiktok_headless'] = headless
     ctx.obj['tiktok_browser'] = browser
-    logger.debug(f"TikTok group context: ms_token, headless: {headless}, browser: {browser}")
+    logger.debug(f"CLI context: ms_token, headless: {headless}, browser: {browser}")
+
 
 async def _run_tiktok_operation(ctx, operation_coro, success_message_template):
     """Helper to run async TikTok operations and handle client."""
@@ -105,64 +90,60 @@ async def _run_tiktok_operation(ctx, operation_coro, success_message_template):
         click.echo(click.style(f"An unexpected error occurred: {e}", fg="red"), err=True)
         ctx.exit(1)
 
-@tiktok_group.command("by-hashtag")
+@cli.command("by-hashtag")
 @click.option('--hashtag', required=True, help='The TikTok hashtag to search for (e.g., "catvideos", not "#catvideos").')
 @count_option
 @output_dir_option
-@temp_dir_option
 @click.pass_context
-def tiktok_by_hashtag(ctx, hashtag: str, count: int, output_directory: str, temporary_directory: str):
-    """Downloads a specified number of videos from a given TikTok hashtag."""
-    logger.info(f"CLI: Download by hashtag '{hashtag}', count: {count}, output: '{output_directory}', temp: '{temporary_directory}'")
+def tiktok_by_hashtag(ctx, hashtag: str, count: int, output_directory: str):
+    """Download videos by hashtag."""
+    logger.info(f"CLI: Download by hashtag '{hashtag}', count: {count}, output: '{output_directory}'")
 
     async def operation(api_client):
         return await download_from_hashtag(
-            api_client, hashtag, count, output_directory, temporary_directory
+            api_client, hashtag, count, output_directory
         )
     asyncio.run(_run_tiktok_operation(ctx, operation, f"Successfully downloaded {{count}} video(s) for hashtag #{hashtag}."))
 
-@tiktok_group.command("by-user")
+@cli.command("by-user")
 @click.option('--username', required=True, help='The TikTok username whose videos you want to download (e.g., "tiktok", not "@tiktok").')
 @count_option
 @output_dir_option
-@temp_dir_option
 @click.pass_context
-def tiktok_by_user(ctx, username: str, count: int, output_directory: str, temporary_directory: str):
-    """Downloads a specified number of videos from a particular TikTok user's profile."""
-    logger.info(f"CLI: Download by user '@{username}', count: {count}, output: '{output_directory}', temp: '{temporary_directory}'")
+def tiktok_by_user(ctx, username: str, count: int, output_directory: str):
+    """Download videos by user."""
+    logger.info(f"CLI: Download by user '@{username}', count: {count}, output: '{output_directory}'")
     async def operation(api_client):
         return await download_from_user(
-            api_client, username, count, output_directory, temporary_directory
+            api_client, username, count, output_directory
         )
     asyncio.run(_run_tiktok_operation(ctx, operation, f"Successfully downloaded {{count}} video(s) for user @{username}."))
 
-@tiktok_group.command("by-url")
+@cli.command("by-url")
 @click.option('--url', 'video_url', required=True, help='The complete URL of the TikTok video you want to download.')
 @output_dir_option
-@temp_dir_option
 @click.pass_context
-def tiktok_by_url(ctx, video_url: str, output_directory: str, temporary_directory: str):
-    """Downloads a single TikTok video directly from its URL."""
-    logger.info(f"CLI: Download by URL '{video_url}', output: '{output_directory}', temp: '{temporary_directory}'")
+def tiktok_by_url(ctx, video_url: str, output_directory: str):
+    """Download a single video by URL."""
+    logger.info(f"CLI: Download by URL '{video_url}', output: '{output_directory}'")
     async def operation(api_client):
         return await download_from_url(
-            api_client, video_url, output_directory, temporary_directory
+            api_client, video_url, output_directory
         )
     # Adjust success message for single download
     asyncio.run(_run_tiktok_operation(ctx, operation, "Successfully downloaded 1 video from the URL."))
 
 
-@tiktok_group.command("trending")
+@cli.command("trending")
 @count_option
 @output_dir_option
-@temp_dir_option
 @click.pass_context
-def tiktok_trending(ctx, count: int, output_directory: str, temporary_directory: str):
-    """Downloads a specified number of currently trending TikTok videos."""
-    logger.info(f"CLI: Download trending, count: {count}, output: '{output_directory}', temp: '{temporary_directory}'")
+def tiktok_trending(ctx, count: int, output_directory: str):
+    """Download trending videos."""
+    logger.info(f"CLI: Download trending, count: {count}, output: '{output_directory}'")
     async def operation(api_client):
         return await download_trending_videos(
-            api_client, count, output_directory, temporary_directory
+            api_client, count, output_directory
         )
     asyncio.run(_run_tiktok_operation(ctx, operation, "Successfully downloaded {count} trending video(s)."))
 

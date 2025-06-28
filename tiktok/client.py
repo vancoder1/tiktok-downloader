@@ -9,14 +9,10 @@ class TikTokClient:
         self._api = None
 
     async def __aenter__(self):
-        """Initializes the TikTokApi session."""
-        if not self.ms_token:
-            logger.error("MS Token is not provided for TikTokClient.")
-            raise ValueError("MS Token is required to initialize TikTokClient.")
-        
-        self._api = TikTokApi(headless=self.headless, browser_name=self.browser)
-        logger.debug(f"Creating TikTok session with token (first 5 chars): {self.ms_token[:5]}...")
-        await self._api.create_sessions(ms_tokens=[self.ms_token], num_sessions=1, sleep_after=3)
+        """Initializes the TikTokApi session."""  
+        self._api = TikTokApi()
+        logger.debug(f"Creating TikTok session")
+        await self._api.create_sessions(ms_tokens=[self.ms_token], num_sessions=1, sleep_after=3, headless=self.headless, browser=self.browser)
         logger.info("TikTok session created successfully.")
         return self._api # Return the underlying api instance for direct use
 

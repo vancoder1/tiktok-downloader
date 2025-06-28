@@ -7,25 +7,20 @@ BASE_YDL_OPTS = {
     'outtmpl': '%(uploader)s_%(id)s_%(timestamp)s.%(ext)s',
     'quiet': True, # Suppress ytdl output unless errors
     'noplaylist': True, # Ensure only single video is downloaded if URL could be a playlist
-    'noprogress': True,
-    'postprocessors': [{
-        'key': 'FFmpegMetadata',
-        'add_metadata': True,
-    }],
+    'paths': {"home": "temp"} # This will be updated dynamically
 }
 
-def _get_ydl_opts(output_dir: str, temp_dir: str):
+def _get_ydl_opts(output_dir: str):
     """Helper to configure ydl_opts for a specific download."""
     opts = BASE_YDL_OPTS.copy()
-    opts['outtmpl'] = os.path.join(output_dir, opts['outtmpl'])
-    opts['paths'] = {"home": temp_dir, "tmp": temp_dir} # Specify both home and tmp for ydlp
+    opts['outtmpl'] = os.path.join(output_dir, '%(uploader)s_%(id)s_%(timestamp)s.%(ext)s')
+    opts['paths'] = {"home": output_dir} # Use output_dir for temporary storage as well
     return opts
 
-async def download_from_hashtag(api, hashtag: str, count: int, output_dir: str, temp_dir: str):
+async def download_from_hashtag(api, hashtag: str, count: int, output_dir: str):
     logger.info(f"Attempting to download {count} videos for hashtag: #{hashtag}")
-    os.makedirs(temp_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
-    ydl_opts = _get_ydl_opts(output_dir, temp_dir)
+    ydl_opts = _get_ydl_opts(output_dir)
     
     downloaded_count = 0
     try:
@@ -44,11 +39,10 @@ async def download_from_hashtag(api, hashtag: str, count: int, output_dir: str, 
         raise # Re-raise to be caught by CLI
     return downloaded_count
 
-async def download_from_user(api, username: str, count: int, output_dir: str, temp_dir: str):
+async def download_from_user(api, username: str, count: int, output_dir: str):
     logger.info(f"Attempting to download {count} videos for user: @{username}")
-    os.makedirs(temp_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
-    ydl_opts = _get_ydl_opts(output_dir, temp_dir)
+    ydl_opts = _get_ydl_opts(output_dir)
 
     downloaded_count = 0
     try:
@@ -67,11 +61,10 @@ async def download_from_user(api, username: str, count: int, output_dir: str, te
         raise
     return downloaded_count
 
-async def download_from_url(api, video_url: str, output_dir: str, temp_dir: str):
+async def download_from_url(api, video_url: str, output_dir: str):
     logger.info(f"Attempting to download video from URL: {video_url}")
-    os.makedirs(temp_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
-    ydl_opts = _get_ydl_opts(output_dir, temp_dir)
+    ydl_opts = _get_ydl_opts(output_dir)
 
     try:
         # For a single URL, TikTokApi might not be strictly needed just for ytdl,
@@ -86,11 +79,10 @@ async def download_from_url(api, video_url: str, output_dir: str, temp_dir: str)
         raise
     return 0
 
-async def download_trending_videos(api, count: int, output_dir: str, temp_dir: str):
+async def download_trending_videos(api, count: int, output_dir: str):
     logger.info(f"Attempting to download {count} trending videos.")
-    os.makedirs(temp_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
-    ydl_opts = _get_ydl_opts(output_dir, temp_dir)
+    ydl_opts = _get_ydl_opts(output_dir)
 
     downloaded_count = 0
     try:
