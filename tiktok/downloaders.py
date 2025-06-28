@@ -71,7 +71,7 @@ async def download_from_url(api, video_url: str, output_dir: str):
         # but if you wanted to fetch metadata first via TikTokApi, you could.
         # Here, we'll assume ytdl handles the direct URL download.
         with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_url])
+            ydl.download(video_url)
         logger.success(f"Successfully downloaded video from {video_url} to {output_dir}")
         return 1 # Downloaded one video successfully
     except Exception as e:
