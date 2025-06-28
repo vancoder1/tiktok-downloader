@@ -1,9 +1,8 @@
 import click
 import asyncio
 import os
-from loguru import logger # Import logger directly
+from loguru import logger
 
-# Import your separated logic
 from tiktok import (
     TikTokClient,
     download_from_hashtag,
@@ -11,12 +10,11 @@ from tiktok import (
     download_from_url,
     download_trending_videos
 )
-# from tiktok.exceptions import TikTokError # If using custom exceptions
 
-# proxy_retriever is not used in the provided main.py, but kept if needed elsewhere
+# proxy_retriever is not used
 # from utils import proxy_retriever
 from utils.logging_config import setup_logging
-from config import OUTPUTS_DIR, TEMP_DIR # PROXY_LIST_FILE, DEBUG_MODE not used here
+from config import OUTPUTS_DIR, TEMP_DIR # PROXY_LIST_FILE, DEBUG_MODE not used
 
 # --- Common Click options ---
 output_dir_option = click.option(

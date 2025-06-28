@@ -2,7 +2,7 @@ from yt_dlp import YoutubeDL
 import os
 from loguru import logger
 
-# Common YDL options template
+# YDL options
 BASE_YDL_OPTS = {
     'outtmpl': '%(uploader)s_%(id)s_%(timestamp)s.%(ext)s',
     'quiet': True, # Suppress ytdl output unless errors
@@ -73,7 +73,7 @@ async def download_from_url(api, video_url: str, output_dir: str):
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
         logger.success(f"Successfully downloaded video from {video_url} to {output_dir}")
-        return 1 # Downloaded one video
+        return 1 # Downloaded one video successfully
     except Exception as e:
         logger.error(f"Failed to download video from URL {video_url}: {e}")
         raise
