@@ -6,7 +6,6 @@ from loguru import logger
 BASE_YDL_OPTS = {
     'outtmpl': '%(uploader)s_%(id)s_%(timestamp)s.%(ext)s',
     'quiet': True, # Suppress ytdl output unless errors
-    'noplaylist': True, # Ensure only single video is downloaded if URL could be a playlist
     'paths': {"home": "temp"} # This will be updated dynamically
 }
 
